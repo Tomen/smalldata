@@ -2,3 +2,6 @@ packages
 .DS_Store
 pubspec.lock
 build
+.idea
+.packages
+config.yaml

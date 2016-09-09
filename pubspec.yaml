@@ -7,3 +7,7 @@ dependencies:
   browser: any
   shelf: any
   shelf_static: any
+  shelf_route: any
+  facebook:
+    git: https://tomen@bitbucket.org/tomen/facebook.git
+  yaml: any
