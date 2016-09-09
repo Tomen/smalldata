@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:async';
 import "dart:convert";
+import "dart:math";
 import "package:yaml/yaml.dart";
 import "package:logging/logging.dart" as logging;
 import 'package:path/path.dart' show join, dirname;
@@ -15,6 +16,8 @@ String facebook_id;
 String facebook_secret;
 
 void main() {
+
+
   loadConfig();
   runServer();
 }
@@ -68,5 +71,14 @@ Future<Response> codeToToken(Request request) async{
   HttpClientResponse response = await tokenRequest.close();
   String result = await response.transform(UTF8.decoder).first;
 
-  return new Response(200, body:result);
+  result = result.substring(result.indexOf("=")+1);
+
+  String output = "";
+  Random random = new Random();
+  for(int i = 0; i < result.length; i++){
+    output += result[i];
+    output += random.nextInt(10).toString();
+  }
+
+  return new Response(200, body:output);
 }

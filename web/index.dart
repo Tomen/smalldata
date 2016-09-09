@@ -1,20 +1,40 @@
 import 'dart:html';
 import "package:logging/logging.dart" as logging;
 
-logging.Logger log = new logging.Logger("main");
-
 String redirectUri;
 
-main() {
-  redirectUri = window.location.toString();
-  redirectUri = Uri.encodeFull(redirectUri);
-  querySelector('#text').text = window.location.toString();
+logging.Logger log = new logging.Logger("client");
 
-  Uri params = new Uri(query:window.location.search);
+String accessToken;
+
+main() {
+  logging.hierarchicalLoggingEnabled = true;
+  logging.Logger.root.level = logging.Level.ALL;
+  logging.Logger.root.onRecord.listen((logging.LogRecord rec) {
+    print('${rec.loggerName} ${rec.level.name}: ${rec.time}: ${rec.message}');
+    printOutput(rec.message);
+  });
+
+  String host = window.location.hostname;
+  String path = window.location.pathname;
+  int port = int.parse(window.location.port);
+  String search = window.location.search;
+  redirectUri = new Uri(scheme:"http", host:host, path:path, port:port).toString();
+
+  log.info("host: $host");
+  log.info("path: $path");
+  log.info("port: $port");
+  log.info("search: $search");
+  log.info("redirectUri: ${redirectUri.toString()}");
+
+  if(search.startsWith("?")) search = search.replaceFirst("?", "");
+  Uri params = new Uri(query:search);
   var code = params.queryParameters["code"];
 
+  log.info("code: $code");
+
   if (code != null) {
-    showApp(code);
+    fetchAccessToken(code);
     return;
   }
 
@@ -26,7 +46,7 @@ showLogin(){
   querySelector('#login_link').attributes["href"] = href;
 }
 
-showApp(code){
+fetchAccessToken(code) async{
   Map params = {
     'redirect_uri': redirectUri,
     'code': code,
@@ -36,5 +56,26 @@ showApp(code){
   int port = int.parse(window.location.port);
   Uri targetUrl = new Uri(host:host, port:port, path:"ctt", queryParameters: params);
 
-  querySelector('#login_link').attributes["href"] = targetUrl.toString();
+  log.info(targetUrl.toString());
+
+  String output = await HttpRequest.getString(targetUrl.toString());
+
+  log.info(output);
+
+  String result = "";
+  for(int i = 0; i < output.length; i += 2){
+    result += output[i];
+  }
+
+  log.info(result);
+
+  accessToken = result;
+}
+
+
+String fullOutput = "";
+
+printOutput(String output){
+  fullOutput += "\n$output";
+  querySelector("#output").text = fullOutput;
 }
