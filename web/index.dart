@@ -1,4 +1,5 @@
 import 'dart:html';
+import "dart:convert";
 import "package:logging/logging.dart" as logging;
 
 String redirectUri;
@@ -6,6 +7,14 @@ String redirectUri;
 logging.Logger log = new logging.Logger("client");
 
 String accessToken;
+List pages = [];
+
+class Page{
+  String accessToken;
+  String id;
+  String name;
+  Page(this.accessToken, this.id, this.name);
+}
 
 main() {
   logging.hierarchicalLoggingEnabled = true;
@@ -70,6 +79,40 @@ fetchAccessToken(code) async{
   log.info(result);
 
   accessToken = result;
+
+  fetchPages();
+}
+
+fetchPages() async{
+  Uri url = makeGraphApiUrl("/me/accounts");
+  String output = await HttpRequest.getString(url.toString());
+  //log.info(output);
+  Map map = JSON.decode(output);
+  List accounts = map["data"];
+  for(Map account in accounts){
+    Page page = new Page(account["access_token"], account["id"], account["name"]);
+    pages.add(page);
+    log.info("${page.name}");
+  }
+
+
+  showPages();
+}
+
+showPages(){
+  for(Page page in pages){
+    querySelector("pageSelector").children.add(new OptionElement(data:page.name, value:page.name));
+  }
+}
+
+Uri makeGraphApiUrl(String path){
+  String scheme = "https";
+  String host = "graph.facebook.com";
+  path = "v2.7$path";
+
+  Map params = {"access_token": accessToken};
+
+  return new Uri(scheme:scheme,host:host,path:path,queryParameters:params);
 }
 
 
