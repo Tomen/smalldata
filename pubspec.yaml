@@ -9,5 +9,5 @@ dependencies:
   shelf_static: any
   shelf_route: any
   facebook:
-    git: https://tomen@bitbucket.org/tomen/facebook.git
+    git: https://github.com/Tomen/facebook.git
   yaml: any
