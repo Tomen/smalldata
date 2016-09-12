@@ -25,35 +25,40 @@ main() async{
     printOutput(rec.message);
   });
 
-  log.info("Logger initialized");
+  try{
+    log.info("Logger initialized");
 
-  String host = window.location.hostname;
-  log.info("host: $host");
+    String host = window.location.hostname;
+    log.info("host: $host");
 
-  String path = window.location.pathname;
-  log.info("path: $path");
+    String path = window.location.pathname;
+    log.info("path: $path");
 
-  int port = int.parse(window.location.port);
-  log.info("port: $port");
+    var port = window.location.port;
+    port = port != null && port != "" ? int.parse(port) : 80;
+    log.info("port: $port");
 
-  String search = window.location.search;
-  log.info("search: $search");
+    String search = window.location.search;
+    log.info("search: $search");
 
-  redirectUri = new Uri(scheme:"http", host:host, path:path, port:port).toString();
-  log.info("redirectUri: ${redirectUri.toString()}");
+    redirectUri = new Uri(scheme:"http", host:host, path:path, port:port).toString();
+    log.info("redirectUri: ${redirectUri.toString()}");
 
-  if(search.startsWith("?")) search = search.replaceFirst("?", "");
-  Uri params = new Uri(query:search);
-  var code = params.queryParameters["code"];
+    if(search.startsWith("?")) search = search.replaceFirst("?", "");
+    Uri params = new Uri(query:search);
+    var code = params.queryParameters["code"];
 
-  log.info("code: $code");
+    log.info("code: $code");
 
-  if (code != null) {
-    await fetchAccessToken(code);
-    return;
+    if (code != null) {
+      await fetchAccessToken(code);
+      return;
+    }
+
+    showLogin();
+  } catch(ex, stack){
+    log.warning("$ex\n$stack");
   }
-
-  showLogin();
 }
 
 showLogin(){
