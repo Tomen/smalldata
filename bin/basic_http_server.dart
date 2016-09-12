@@ -16,24 +16,33 @@ String facebook_id;
 String facebook_secret;
 
 void main() {
-
-
   loadConfig();
   runServer();
 }
 
 loadConfig(){
-  String raw = new File("config.yaml").readAsStringSync();
-  YamlMap yaml = loadYaml(raw);
+  File file = new File("config.yaml");
+  if(file.existsSync()){
+    String raw = file.readAsStringSync();
+    YamlMap yaml = loadYaml(raw);
 
-  YamlMap appConfig = yaml["facebook"];
-  if(appConfig == null){
-    log.severe("no facebook config provided in config.yaml. Exiting");
-    return;
+    YamlMap appConfig = yaml["facebook"];
+    if(appConfig == null){
+      log.severe("no facebook config provided in config.yaml. Exiting");
+      exit(1337001);
+    }
+
+    facebook_id = appConfig["app_id"];
+    facebook_secret = appConfig["app_secret"];
   }
-
-  facebook_id = appConfig["app_id"];
-  facebook_secret = appConfig["app_secret"];
+  else{
+    facebook_id = Platform.environment["FB_ID"];
+    facebook_secret = Platform.environment["FB_SECRET"];
+    if(facebook_id == null || facebook_secret == null){
+      log.severe("no facebook config provided in environment variables. Exiting");
+      exit(1337002);
+    }
+  }
 }
 
 runServer(){
