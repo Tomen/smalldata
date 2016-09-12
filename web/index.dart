@@ -67,6 +67,7 @@ showLogin(){
 }
 
 fetchAccessToken(code) async{
+  log.info("fetchAccessToken()");
   Map params = {
     'redirect_uri': redirectUri,
     'code': code,
@@ -95,6 +96,7 @@ fetchAccessToken(code) async{
 }
 
 fetchPages() async{
+  log.info("fetchPages()");
   Uri url = makeGraphApiUrl("/me/accounts");
   String output = await HttpRequest.getString(url.toString());
   //log.info(output);
@@ -110,6 +112,7 @@ fetchPages() async{
 }
 
 showPages(){
+  log.info("showPages()");
   for(Page page in pages){
     querySelector("pageSelector").children.add(new OptionElement(data:page.name, value:page.name));
   }
