@@ -16,7 +16,8 @@ class Page{
   Page(this.accessToken, this.id, this.name);
 }
 
-main() {
+main() async{
+  print("Initializing logger logger...");
   logging.hierarchicalLoggingEnabled = true;
   logging.Logger.root.level = logging.Level.ALL;
   logging.Logger.root.onRecord.listen((logging.LogRecord rec) {
@@ -24,16 +25,21 @@ main() {
     printOutput(rec.message);
   });
 
-  String host = window.location.hostname;
-  String path = window.location.pathname;
-  int port = int.parse(window.location.port);
-  String search = window.location.search;
-  redirectUri = new Uri(scheme:"http", host:host, path:path, port:port).toString();
+  log.info("Logger initialized");
 
+  String host = window.location.hostname;
   log.info("host: $host");
+
+  String path = window.location.pathname;
   log.info("path: $path");
+
+  int port = int.parse(window.location.port);
   log.info("port: $port");
+
+  String search = window.location.search;
   log.info("search: $search");
+
+  redirectUri = new Uri(scheme:"http", host:host, path:path, port:port).toString();
   log.info("redirectUri: ${redirectUri.toString()}");
 
   if(search.startsWith("?")) search = search.replaceFirst("?", "");
@@ -43,7 +49,7 @@ main() {
   log.info("code: $code");
 
   if (code != null) {
-    fetchAccessToken(code);
+    await fetchAccessToken(code);
     return;
   }
 
@@ -80,7 +86,7 @@ fetchAccessToken(code) async{
 
   accessToken = result;
 
-  fetchPages();
+  await fetchPages();
 }
 
 fetchPages() async{
@@ -94,7 +100,6 @@ fetchPages() async{
     pages.add(page);
     log.info("${page.name}");
   }
-
 
   showPages();
 }
