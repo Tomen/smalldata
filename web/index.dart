@@ -74,7 +74,8 @@ fetchAccessToken(code) async{
   };
 
   String host = window.location.hostname;
-  int port = int.parse(window.location.port);
+  var port = window.location.port;
+  port = port != null && port != "" ? int.parse(port) : 80;
   Uri targetUrl = new Uri(host:host, port:port, path:"ctt", queryParameters: params);
 
   log.info(targetUrl.toString());
