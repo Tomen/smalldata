@@ -8,6 +8,7 @@ logging.Logger log = new logging.Logger("client");
 
 String accessToken;
 List pages = [];
+SelectElement dropdown;
 
 class Page{
   String accessToken;
@@ -63,7 +64,7 @@ main() async{
 
 showLogin(){
   String href = "https://www.facebook.com/dialog/oauth?client_id=1028966720530652&redirect_uri=$redirectUri";
-  querySelector('#login_link').attributes["href"] = href;
+  querySelector("#login_button").onClick.listen((MouseEvent me) => window.open(href, "_self"));
 }
 
 fetchAccessToken(code) async{
@@ -76,6 +77,7 @@ fetchAccessToken(code) async{
   String host = window.location.hostname;
   var port = window.location.port;
   port = port != null && port != "" ? int.parse(port) : 80;
+  if(host == "localhost") port = 9999;
   Uri targetUrl = new Uri(host:host, port:port, path:"ctt", queryParameters: params);
 
   log.info(targetUrl.toString());
@@ -113,9 +115,11 @@ fetchPages() async{
 }
 
 showPages(){
+  dropdown = querySelector("#select_page");
+
   log.info("showPages()");
   for(Page page in pages){
-    querySelector("pageSelector").children.add(new OptionElement(data:page.name, value:page.name));
+    dropdown.children.add(new OptionElement(data:page.name, value:page.id));
   }
 }
 
