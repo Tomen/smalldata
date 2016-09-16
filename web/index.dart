@@ -85,6 +85,7 @@ fetchControls(){
   errorMessage.style.display = "none";
   ButtonElement retryButton = querySelector("#retry_button");
   retryButton.onClick.listen((_)=>window.open(redirectUri.toString(), "_self"));
+  textInput.onFocus.listen((_)=>successMessage.style.display = "none");
 }
 
 showLogin(){
