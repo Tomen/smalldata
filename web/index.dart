@@ -170,10 +170,12 @@ onPost(MouseEvent me) async{
 
     if(map.containsKey("id")){
       log.info("YAY! Your story has been posted!");
+      successMessage.style.display = "block";
     }
     else {
       log.info("Your story could not be posted. Please try again later.");
       log.fine(map.toString());
+      errorMessage.style.display = "block";
     }
   }
   catch(ex, stack) {
