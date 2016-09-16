@@ -25,6 +25,10 @@
         padding: 40px 15px;
         text-align: center;
       }
+
+      #feedback_area {
+        margin-top:30px;
+      }
     </style>
   </head>
   <body>
@@ -33,20 +37,32 @@
       <div id="content">
         <h1>The small data project</h1>
         <p class="lead">Post small bits of data to any of your pages quickly!</p>
-        <div>
+        <div id="login_area">
           <button id="login_button" type="button" class="btn btn-lg btn-primary">Connect</button>
         </div>
-        <textarea id="output" class="form-control" cols="120" rows="20"></textarea>
+        <div id="app_area">
+          <textarea id="output" class="form-control" cols="120" rows="20" style="display: none"></textarea>
 
-        <form class="form-inline">
-          <div class="form-group">
-            <select id="select_page" class="form-control" placeholder="Facebook Page"></select>
+          <form class="form-inline">
+            <div class="form-group">
+              <select id="select_page" class="form-control" placeholder="Facebook Page"></select>
+            </div>
+            <div class="form-group">
+              <input type="text" class="form-control" id="text_input" placeholder="Your message" style="width:400px;">
+            </div>
+            <button id="post_button" type="button" class="btn btn-primary">Post</button>
+          </form>
+        </div>
+        <div id="feedback_area">
+          <div id="success_message" class="alert alert-success" role="alert">
+            <strong>Yay!</strong> Your story has been posted!
           </div>
-          <div class="form-group">
-            <input type="text" class="form-control" id="textInput" placeholder="Your message" style="width:400px;">
+          <div id="error_message" class="alert alert-warning" role="alert">
+            <strong>Oh noes :(</strong> There has been an error. Please try again later!
+            <button id="retry_button" type="button" class="btn btn-default">Try again</button>
           </div>
-          <button type="button" class="btn btn-default">Post</button>
-        </form>
+        </div>
+        <div class="text-muted">We respect your privacy. We won’t use your personal information in any other way than to authenticate you against the Facebook platform. We won’t share your personal data e.g. E-mail id with any third party.</div>
       </div>
 
     <script type="application/dart" src="index.dart"></script>

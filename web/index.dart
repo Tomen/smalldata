@@ -6,9 +6,15 @@ String redirectUri;
 
 logging.Logger log = new logging.Logger("client");
 
-String accessToken;
+String userAccessToken;
 List pages = [];
+
+DivElement loginArea;
+DivElement appArea;
 SelectElement dropdown;
+InputElement textInput;
+DivElement successMessage;
+DivElement errorMessage;
 
 class Page{
   String accessToken;
@@ -27,39 +33,58 @@ main() async{
   });
 
   try{
-    log.info("Logger initialized");
+    log.fine("Logger initialized");
 
     String host = window.location.hostname;
-    log.info("host: $host");
+    log.fine("host: $host");
 
     String path = window.location.pathname;
-    log.info("path: $path");
+    log.fine("path: $path");
 
     var port = window.location.port;
     port = port != null && port != "" ? int.parse(port) : 80;
-    log.info("port: $port");
+    log.fine("port: $port");
 
     String search = window.location.search;
-    log.info("search: $search");
+    log.fine("search: $search");
 
     redirectUri = new Uri(scheme:"http", host:host, path:path, port:port).toString();
-    log.info("redirectUri: ${redirectUri.toString()}");
+    log.fine("redirectUri: ${redirectUri.toString()}");
 
     if(search.startsWith("?")) search = search.replaceFirst("?", "");
     Uri params = new Uri(query:search);
     var code = params.queryParameters["code"];
 
-    log.info("code: $code");
+    log.fine("code: $code");
+
+    fetchControls();
 
     if (code != null) {
+      loginArea.style.display = "none";
       await fetchAccessToken(code);
       return;
     }
 
+    appArea.style.display = "none";
     showLogin();
   } catch(ex, stack){
+    errorMessage.style.display = "block";
     log.warning("$ex\n$stack");
   }
+}
+
+fetchControls(){
+  log.fine("fetchControls()");
+  dropdown = querySelector("#select_page");
+  textInput = querySelector("#text_input");
+  loginArea = querySelector("#login_area");
+  appArea = querySelector("#app_area");
+  successMessage = querySelector("#success_message");
+  errorMessage = querySelector("#error_message");
+  successMessage.style.display = "none";
+  errorMessage.style.display = "none";
+  ButtonElement retryButton = querySelector("#retry_button");
+  retryButton.onClick.listen((_)=>window.open(redirectUri.toString(), "_self"));
 }
 
 showLogin(){
@@ -68,7 +93,7 @@ showLogin(){
 }
 
 fetchAccessToken(code) async{
-  log.info("fetchAccessToken()");
+  log.fine("fetchAccessToken()");
   Map params = {
     'redirect_uri': redirectUri,
     'code': code,
@@ -80,26 +105,26 @@ fetchAccessToken(code) async{
   if(host == "localhost") port = 9999;
   Uri targetUrl = new Uri(host:host, port:port, path:"ctt", queryParameters: params);
 
-  log.info(targetUrl.toString());
+  log.fine(targetUrl.toString());
 
   String output = await HttpRequest.getString(targetUrl.toString());
 
-  log.info(output);
+  log.fine(output);
 
   String result = "";
   for(int i = 0; i < output.length; i += 2){
     result += output[i];
   }
 
-  log.info(result);
+  log.fine(result);
 
-  accessToken = result;
+  userAccessToken = result;
 
   await fetchPages();
 }
 
 fetchPages() async{
-  log.info("fetchPages()");
+  log.fine("fetchPages()");
   Uri url = makeGraphApiUrl("/me/accounts");
   String output = await HttpRequest.getString(url.toString());
   //log.info(output);
@@ -115,20 +140,60 @@ fetchPages() async{
 }
 
 showPages(){
-  dropdown = querySelector("#select_page");
-
-  log.info("showPages()");
+  log.fine("showPages()");
   for(Page page in pages){
     dropdown.children.add(new OptionElement(data:page.name, value:page.id));
   }
+
+  ButtonElement postButton = querySelector("#post_button");
+  postButton.onClick.listen(onPost);
 }
 
-Uri makeGraphApiUrl(String path){
+onPost(MouseEvent me) async{
+  log.fine("onPost()");
+  try {
+    String channelId = dropdown.value;
+    Page page = pages.firstWhere((Page page) => page.id == channelId);
+    log.finer("channelId: $channelId");
+
+    String message = textInput.value;
+    log.finer("message: $message");
+    Map params = {"message": message};
+
+    Uri url = makeGraphApiUrl("/${page.id}/feed", accessToken: page.accessToken, params:params);
+    log.finer(url.toString());
+    HttpRequest request = await HttpRequest.postFormData(url.toString(), {});
+    String output = request.responseText;
+    log.finer(output);
+
+    Map map = JSON.decode(output);
+
+    if(map.containsKey("id")){
+      log.info("YAY! Your story has been posted!");
+    }
+    else {
+      log.info("Your story could not be posted. Please try again later.");
+      log.fine(map.toString());
+    }
+  }
+  catch(ex, stack) {
+    errorMessage.style.display = "block";
+    log.warning("$ex\n$stack");
+  }
+}
+
+Uri makeGraphApiUrl(String path, {String accessToken, Map params}){
   String scheme = "https";
   String host = "graph.facebook.com";
   path = "v2.7$path";
 
-  Map params = {"access_token": accessToken};
+  if(accessToken == null){
+    accessToken = userAccessToken;
+  }
+
+  if(params == null) params = {};
+
+  params["access_token"] = accessToken;
 
   return new Uri(scheme:scheme,host:host,path:path,queryParameters:params);
 }
