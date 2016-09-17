@@ -80,6 +80,9 @@ Future<Response> codeToToken(Request request) async{
   HttpClientResponse response = await tokenRequest.close();
   String result = await response.transform(UTF8.decoder).first;
 
+  List results = result.split("&");
+  result = results.firstWhere((String element)=>element.startsWith("access_token"));
+
   result = result.substring(result.indexOf("=")+1);
 
   String output = "";

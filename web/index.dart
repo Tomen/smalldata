@@ -89,7 +89,10 @@ fetchControls(){
 }
 
 showLogin(){
-  String href = "https://www.facebook.com/dialog/oauth?client_id=1028966720530652&redirect_uri=$redirectUri";
+
+  dynamic scope = ['email', "manage_pages", "publish_actions", "publish_pages"];
+  scope = scope.reduce((String value, String element) => value + "," + element);
+  String href = "https://www.facebook.com/dialog/oauth?client_id=1028966720530652&redirect_uri=$redirectUri&scope=$scope";
   querySelector("#login_button").onClick.listen((MouseEvent me) => window.open(href, "_self"));
 }
 
@@ -125,19 +128,28 @@ fetchAccessToken(code) async{
 }
 
 fetchPages() async{
-  log.fine("fetchPages()");
-  Uri url = makeGraphApiUrl("/me/accounts");
-  String output = await HttpRequest.getString(url.toString());
-  //log.info(output);
-  Map map = JSON.decode(output);
-  List accounts = map["data"];
-  for(Map account in accounts){
-    Page page = new Page(account["access_token"], account["id"], account["name"]);
-    pages.add(page);
-    log.info("${page.name}");
-  }
+  try{
+    log.fine("fetchPages()");
+    Uri url = makeGraphApiUrl("/me/accounts");
+    log.finer("url: $url");
+    String output = await HttpRequest.getString(url.toString(), onProgress:onProgress);
+    log.finer("output: $output");
+    Map map = JSON.decode(output);
+    List accounts = map["data"];
+    for(Map account in accounts){
+      Page page = new Page(account["access_token"], account["id"], account["name"]);
+      pages.add(page);
+      log.finer("${page.name}");
+    }
 
-  showPages();
+    showPages();
+  } catch (ex, stack){
+    log.warning("Exception: $ex\n$stack");
+  }
+}
+
+onProgress(ProgressEvent pe){
+  log.finer("onProgress()");
 }
 
 showPages(){
